@@ -2,6 +2,7 @@ import express from "express";
 
 // import api router 
 import  workersApi from "./routers/api/workersApiRouter.js"
+import houseOwnerApi from "./routers/api/houseOwnerApiRouter.js"
 
 
 const app = express();
@@ -14,6 +15,7 @@ app.get("/", (req, res) => {
 });
 // api routers
 app.use("/api/workers/",workersApi)
+app.use("/api/houseowners/",houseOwnerApi)
 
 
 app.listen(3000, () => {
