@@ -6,13 +6,21 @@ import otpGenerator from "otp-generator";
 // generate OTP
 
 const generateOTP = () => {
-    return otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false });
+    return otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false ,lowerCaseAlphabets: false});
 }
 
 //send OTP to user email
 export const sendOTPEmail = async (req, res) => {
     try{
-        const {email}=req.body;
+        const {email}=req.body;   
+        if(!email){
+            return res.status(400).json({message: "Email is required"})
+        }
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
         const otp = generateOTP();
         //store the OTP in redis with a 5 minute expiration time
         await redisClient.setEx(`otp:${email}`, 300, otp);

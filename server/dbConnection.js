@@ -1,7 +1,4 @@
 import mysql from "mysql2/promise";
-console.log(process.env.DB_HOST)
-console.log(process.env.DB_USER)
-console.log(process.env.DB_PASSWORD)
 
 const db = await mysql.createConnection(
       {
