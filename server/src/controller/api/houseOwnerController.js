@@ -1,18 +1,19 @@
-import {getHouseOwnersByIdModel,getHouseOwnersMOdel,createHouseOwnerModel,updateHouseOwnerModel,deleteHouseOwnerModel} 
+import {getHouseOwnersByIdModel,getHouseOwnersModel,createHouseOwnerModel,updateHouseOwnerModel,deleteHouseOwnerModel} 
 from "../../models/houseOwnerModel.js";
+import {createJobModel,} from "../../models/jobsModel.js"
 import { validationResult } from "express-validator";
 //import bcrypt for password hashing
 import bcrypt from "bcrypt"
 
 export const getHouseOwners = async (req, res) => {
     try {
-        const result = await getHouseOwnersMOdel()
+        const result = await getHouseOwnersModel()
         if (result.length === 0) {
             res.status(404).json("Not found")
             return
         }
         else {
-            const {password,latitude,longitude, ...hashedResult} = result[0]
+            const {password,latitude,longitude, ...hashedResult} = result
             res.status(200).json(hashedResult)
             return
         }
@@ -22,6 +23,7 @@ export const getHouseOwners = async (req, res) => {
         res.status(500).json("server error")
     }
 }
+
 export const getHouseOwnerById = async (req, res) => {
     try {
         const id = req.params.id;
@@ -89,15 +91,38 @@ export const createHouseOwner = async (req, res) => {
         res.status(500).json("server error")
     }
 }
-export const updateHouseOwner = async (req, res) => {
-    try {
-        const errors = validationResult(req)
-        if (!errors.isEmpty()) {
-            res.status(400).json({ errors: errors.array() })
+export const createJob = async (req,res)=>{
+    try{
+        const data = req.body
+        const values =[
+            data.ownerId,
+            data.houseId,
+            data.workType,
+            data.description,
+            data.status,
+            data.scheduledTime
+        ]
+        const result = await createJobModel(values)
+        if(result.affectedRows === 0){
+            res.status(404).json({message:"not found"})
             return
         }
+
+        else{
+            res.status(201).json({message:"job created"})
+            return
+        }
+    }
+    catch(err){
+        console.log(err)
+        res.status(500).json({message:"server error"})
+    }
+}
+export const updateHouseOwner = async (req, res) => {
+    try {
+      
         const id = req.params.id;
-        const data = req.body
+        let data = req.body
         const hashedPassword = data.password ? await bcrypt.hash(data.password, 10) : undefined
         if (hashedPassword) {
             data.password = hashedPassword
@@ -105,7 +130,7 @@ export const updateHouseOwner = async (req, res) => {
         const values = Object.values(data)
         const keys = Object.keys(data)
         const set = keys.map(key => `${key} = ?`).join(", ")
-        const result = await updateHouseOwnerModel(id,data,set);
+        const result = await updateHouseOwnerModel(id,values,set);
         if (result.affectedRows === 0) {
             res.status(404).json("Not found")
         } else {

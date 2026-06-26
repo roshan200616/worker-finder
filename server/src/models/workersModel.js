@@ -2,7 +2,15 @@ import queryExec from "../config/dbConnection.js";
 
 export const getWorkersModel = async () => {
     try {
-        const result = await queryExec(`select * from workers`)
+        const result = await queryExec(`select 
+            name,
+            mobileNo,
+            email,
+            area,
+            city,
+            state,
+            pin
+            from workers where deletedAt is null`)
         return result
     }
     catch (err) {
@@ -10,9 +18,16 @@ export const getWorkersModel = async () => {
     }
 }
 
-export const getWorkersByIdModel = async (id)=>{
+export const getWorkerByIdModel = async (id)=>{
     try{
-        const result = await queryExec(`select * from workers where id=?`,[id])
+        const result = await queryExec(`select  name,
+            mobileNo,
+            email,
+            area,
+            city,
+            state,
+            pin
+             from workers where id=? `,[id])
         return result[0]
     }
     catch(err){
@@ -31,7 +46,7 @@ export const createWorkersModel = async (data)=>{
             state,
             pin,
             latitude,
-            longitude),values(?,?,?,?,?,?,?,?,?,?)`,[data])
+            longitude)values(?,?,?,?,?,?,?,?,?,?)`,[...data])
         return result
     }
     catch(err){
@@ -41,13 +56,29 @@ export const createWorkersModel = async (data)=>{
 
 export const updateWorkerModel = async(id,data,sets)=>{
     try{
-        const result = await queryExec(`upate workers set ${sets} where id =?`,[id,...data])
+        
+        const result = await queryExec(`update workers set ${sets} where id =?`,[...data,id])
         return result
     }
     catch(err){
         throw err
     }
 }
+export const softDeleteModel = async (id) => {
+    try {
+        const result = await queryExec(
+            `UPDATE workers 
+             SET deletedAt = CURRENT_TIMESTAMP()
+             WHERE id = ? AND deletedAt IS NULL`,
+            [id]
+        );
+
+        return result;
+    } catch (err) {
+        throw err;
+    }
+};
+
 
 export const deleteWorkerModel = async(id)=>{
     try{

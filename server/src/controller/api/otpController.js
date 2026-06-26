@@ -44,10 +44,8 @@ export const sendOTPEmail = async (req, res) => {
 export  const verifyOTPEmail = async (req, res) => {
     try{
         const {email,otp}=req.body;
-        //get the OTP from redis
         const storedOTP = await redisClient.get(`otp:${email}`);
         if(storedOTP === otp){
-            //delete the OTP from redis
             await redisClient.del(`otp:${email}`);
             res.status(200).json({message: "OTP verified"})
         }

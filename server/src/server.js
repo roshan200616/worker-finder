@@ -1,10 +1,12 @@
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
 import app from "./app.js";
-import dotenv from "dotenv/config";
 
-dontenv.config();
+const PORT = process.env.PORT;
 
-const PORT = process.env.PORT || 3000;
+await import("./config/dbConnection.js");
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-})
+  console.log(`Server running on port ${PORT}`);
+});
