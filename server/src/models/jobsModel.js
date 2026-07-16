@@ -50,8 +50,8 @@ export const getAcceptedjobsModel = async (id,value) => {
 export const createJobModel = async (data) => {
     try {
         const result = await queryExec(
-            `insert into jobs(ownerId,houseID,workType,description,status,scheduledTime)
-             values(?,?,?,?,?,?)`, [...data]
+            `insert into jobs(ownerId,houseID,workType,description,status)
+             values(?,?,?,?,?)`, [...data]
         )
         return result
     }
@@ -71,4 +71,14 @@ export const acceptJobmodel = async (id,data,workerId) => {
         throw err
     }
 
+}
+
+export const updateJobmodel = async (id, data, set) => {
+    try{
+        const result = await queryExec(`update jobs set ${set} where id=?`, [...data, id])
+        return result 
+    }
+    catch(err){
+        throw err
+    }
 }

@@ -1,7 +1,8 @@
-import redisClient from "../../config/redis.js";
 import { validationResult } from "express-validator";
 import transporter from "../../config/mail.js";
 import otpGenerator from "otp-generator";
+
+const otpStore = {};
 
 // generate OTP
 
@@ -23,8 +24,11 @@ export const sendOTPEmail = async (req, res) => {
 
         const otp = generateOTP();
         //store the OTP in redis with a 5 minute expiration time
-        await redisClient.setEx(`otp:${email}`, 300, otp);
-        //send OTP to user email
+         otpStore[email]={
+            otp:otp,
+            expires:Date.now()+5*60*1000  
+         } 
+                //send OTP to user email
         const mailOptions = {
             from: process.env.EMAIL,
             to: email,
@@ -41,20 +45,43 @@ export const sendOTPEmail = async (req, res) => {
 }
 
 
-export  const verifyOTPEmail = async (req, res) => {
-    try{
-        const {email,otp}=req.body;
-        const storedOTP = await redisClient.get(`otp:${email}`);
-        if(storedOTP === otp){
-            await redisClient.del(`otp:${email}`);
-            res.status(200).json({message: "OTP verified"})
+export const verifyOTPEmail = async (req, res) => {
+    try {
+        const { email,otp } = req.body;
+        const data = otpStore[email];
+        if (!data) {
+            return res.status(400).json({
+                message: "OTP not found"
+            });
+        }
+
+        const storedOTP = data.otp;
+        const expires = data.expires;
+        if (Date.now() > expires) {
+            delete otpStore[email];
+            return res.status(400).json({
+                message: "OTP has expired"
+            });
+        }
+
+        if (Number(storedOTP) === Number(otp)) {
+            delete otpStore[email];
+
+            return res.status(200).json({
+                message: "OTP verified"
+            });
         }
         else{
-            res.status(400).json({message: "Invalid OTP"})
+           return res.status(400).json({
+            message: "Invalid OTP"
+        });
+
         }
+        
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: "Error verifying OTP email"
+        });
     }
-    catch(err){
-        console.log(err)
-        res.status(500).json({message: "Error verifying OTP email"})
-    }
-}
+};

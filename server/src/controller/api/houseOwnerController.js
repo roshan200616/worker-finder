@@ -1,6 +1,7 @@
 import {getHouseOwnersByIdModel,getHouseOwnersModel,createHouseOwnerModel,updateHouseOwnerModel,deleteHouseOwnerModel} 
 from "../../models/houseOwnerModel.js";
-import {createJobModel,} from "../../models/jobsModel.js"
+import {createJobModel,updateJobmodel} from "../../models/jobsModel.js"
+import {createReviewModel} from "../../models/reviewsModel.js"
 import { validationResult } from "express-validator";
 //import bcrypt for password hashing
 import bcrypt from "bcrypt"
@@ -45,7 +46,6 @@ export const getHouseOwnerById = async (req, res) => {
         res.status(500).json("server error")
     }
 }
-
 export const createHouseOwner = async (req, res) => {
     try {
         const errors = validationResult(req)
@@ -100,7 +100,6 @@ export const createJob = async (req,res)=>{
             data.workType,
             data.description,
             data.status,
-            data.scheduledTime
         ]
         const result = await createJobModel(values)
         if(result.affectedRows === 0){
@@ -112,6 +111,23 @@ export const createJob = async (req,res)=>{
             res.status(201).json({message:"job created"})
             return
         }
+    }
+    catch(err){
+        console.log(err)
+        res.status(500).json({message:"server error"})
+    }
+}
+export const createReview = async (req,res)=>{
+    try{
+        const data = req.body
+        const values =[
+            data.ownerId,
+            data.workerId,
+            data.rating,
+            data.comment
+        ]
+        const result = await createReviewModel(values)
+        res.status(201).json({message:"review created"})
     }
     catch(err){
         console.log(err)
@@ -141,6 +157,28 @@ export const updateHouseOwner = async (req, res) => {
         res.status(500).json("Server error")
     }
 }
+export const updateJob = async (req,res)=>{
+    try{
+        const id = req.params.id
+        const data = req.body 
+        const values = Object.values(data)
+        const keys = Object.values(data)
+        const sets = keys.map(key => `${key} = ?`).join(", ")
+        const result = await updateJobmodel(id,values,sets)
+        if(result.affectedRows ===0){
+            res.status(404).json({message:"not found"})
+            return
+        }
+        else{
+            res.status(200).json({message:"success"})
+        }
+    }
+    catch(err){
+         console.log(err)
+         res.status(500).json({message:"server error"})
+    }
+
+} 
 export const deleteHouseOwner = async (req, res) => {
     try {
         const id = req.params.id
