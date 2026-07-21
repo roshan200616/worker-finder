@@ -7,7 +7,7 @@ import {
  softDeleteModel
 } from "../../models/workersModel.js";
 import { getJobsmodel,acceptJobmodel ,getAcceptedjobsModel} from "../../models/jobsModel.js";
-import { getReviewsModelByOwnerId } from "../../models/reviewsModel.js";
+import { getReviewsModel } from "../../models/reviewsModel.js";
 import { validationResult } from "express-validator";
 import { body } from "express-validator";
 //import bcrypt for password hashing
@@ -65,6 +65,23 @@ export const getWorkerById = async (req, res) => {
         res.status(500).json("server error")
     }
 }
+export const showReviews= async(req,res)=>{
+    try{
+       const id = req.params.id
+       const result = await getReviewsModel(id)
+       if(result.length === 0){
+        res.status(404).json({message:"not founs"})
+        return
+       }
+       else{
+        res.status(200).json(result)
+       }
+    }
+    catch(err){
+        console.log(err)
+        return res.status(500).json({message:"server error"})
+    }
+}
 export const showAccpetedJobs = async (req,res)=>{
     try{
         const id = req.params.id
@@ -83,22 +100,8 @@ export const showAccpetedJobs = async (req,res)=>{
         res.status(500).json({message:"server error"})
     }
 }
-export const showReviews  = async(req,res) =>{
-    try{
-        const id = req.params.id
-        const result = await getReviewsModelByOwnerId(id)
-        if(result.length === 0){
-            res.status(404).json({message:"not found"})
-        }
-        else{
-            res.status(200).json(result)
-        }
-    }
-    catch(err){
-        console.log(err)
-        res.status(500).json({message:"server error"})
-    }
-}
+
+
 export const createWorker = async (req, res) => {
     try {
         const errors = validationResult(req)

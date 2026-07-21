@@ -1,9 +1,9 @@
 import express from "express";
 import { sendOTPEmail, verifyOTPEmail } from "../../controller/api/otpController.js";
-import otpValidation from "../../validators/otpValidator.js";
+import emailValidation from "../../validators/EmailValidator.js";
 const router = express.Router()
 
-router.post("/send", otpValidation, sendOTPEmail)
-router.post("/verify", otpValidation,   verifyOTPEmail)
+router.post("/send", emailValidation, sendOTPEmail)
+router.post("/verify",verifyOTPEmail)
 
 export default router
