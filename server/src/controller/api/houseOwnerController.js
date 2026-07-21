@@ -1,10 +1,13 @@
 import {getHouseOwnersByIdModel,getHouseOwnersModel,createHouseOwnerModel,updateHouseOwnerModel,deleteHouseOwnerModel} 
 from "../../models/houseOwnerModel.js";
 import {createJobModel,updateJobmodel} from "../../models/jobsModel.js"
-import {createReviewModel} from "../../models/reviewsModel.js"
+import { getReviewsModelByWorkerId,createReviewModel,updateReviewModel,
+    softDeleteReviewModel,hardDeleteReviewModel} from "../../models/reviewsModel.js"
+
 import { validationResult } from "express-validator";
 //import bcrypt for password hashing
 import bcrypt from "bcrypt"
+import e from "express";
 
 export const getHouseOwners = async (req, res) => {
     try {
@@ -44,6 +47,22 @@ export const getHouseOwnerById = async (req, res) => {
 
         console.log(err)
         res.status(500).json("server error")
+    }
+}
+export const showReviews  = async(req,res) =>{
+    try{
+        const id = req.params.id
+        const result = await getReviewsModelByWorkerId(id)
+        if(result.length === 0){
+            res.status(404).json({message:"not found"})
+        }
+        else{
+            res.status(200).json(result)
+        }
+    }
+    catch(err){
+        console.log(err)
+        res.status(500).json({message:"server error"})
     }
 }
 export const createHouseOwner = async (req, res) => {
@@ -121,10 +140,9 @@ export const createReview = async (req,res)=>{
     try{
         const data = req.body
         const values =[
-            data.ownerId,
-            data.workerId,
+            data.jobId,
             data.rating,
-            data.comment
+            data.review
         ]
         const result = await createReviewModel(values)
         res.status(201).json({message:"review created"})
@@ -179,6 +197,28 @@ export const updateJob = async (req,res)=>{
     }
 
 } 
+export const updateReview = async (req,res)=>{
+    try{
+        
+        const id = req.params.id
+        const data = req.body
+        const values = Object.values(data)
+        const keys = Object.keys(data)
+        const sets = keys.map(key => `${key}= ?`).join(",") 
+        const result = await updateReviewModel(id,values,sets)
+        if(result.affectedRows === 0){
+            res.status(404).json({message:"not found"})
+            return  
+        }
+        else{
+            res.status(200).json({message:"success"})
+        }
+    }
+    catch(err){
+        console.log(err)
+        res.status(500).json({message:"server error"})
+    }
+}
 export const deleteHouseOwner = async (req, res) => {
     try {
         const id = req.params.id
@@ -197,34 +237,32 @@ export const deleteHouseOwner = async (req, res) => {
     }
 }
 
+export const deleteReview = async (req,res)=>{
+    try{
+        const id = req.params.id
+        const method = req.query.method
+        if(method === "soft"){
+            const result = await softDeleteReviewModel(id)
+            if(result.affectedRows === 0){
+                res.status(404).json({message:"not found"})
+                return
+            }
+            res.status(200).json({message:"Review soft deleted successfully"})
+            return
+        }
+        else{
+            const result = await hardDeleteReviewModel(id)
+            if(result.affectedRows === 0){
+                res.status(404).json({message:"not found"})
+                return
+            }
+            res.status(200).json({message:"Review hard deleted successfully"}) 
+            return 
+        }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    }
+    catch(err){
+        conosle.log(err)
+        return res.status(500).json({message:"server error"})
+    }
+}

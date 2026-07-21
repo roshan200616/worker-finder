@@ -17,7 +17,6 @@ router.get("/reviews/:id",showReviews)
 
 router.post("/", workerValidation, createWorker)
 
-
 router.put("/:id", workerValidation, updateWorker)
 router.put("/accept/job/:id",accpetJob)
 router.put("/softDelete/:id",softDelete)

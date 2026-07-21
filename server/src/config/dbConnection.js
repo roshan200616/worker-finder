@@ -18,6 +18,7 @@ const db = await mysql.createConnection({
 console.log("database connected");
 export default async function queryExec(queryStr, queryOption=[]) {
     try {
+        
         const [rows] = await db.execute(queryStr, queryOption);
         return rows;
     } catch(err) {
